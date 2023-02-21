@@ -1,10 +1,10 @@
 package com.example.spring_security_2023.config;
 
+import com.example.spring_security_2023.dao.UserDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,7 +21,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDao userDao;
     private final JwtUtils jwtUtils;
 
 
@@ -40,7 +40,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         jwtToken = authHeader.substring(7);
         userEmail = jwtUtils.extractUserName(jwtToken);
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+            final UserDetails userDetails = userDao.findUserByEmail(userEmail);
             if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
